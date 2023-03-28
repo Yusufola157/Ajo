@@ -29,7 +29,12 @@ export const RegisterUser= async(req:Request,res:Response)=>{
             debit:0,
         })
         regUser?.wallet.push(new mongoose.Types.ObjectId(createWalllet?._id));
-        regUser.save()
+         const create = await backToSchoolModel.create({
+                _id:regUser?._id,
+                balance:0,
+            })
+            regUser?.backToSchool?.push(new mongoose.Types.ObjectId(create._id))
+            regUser?.save();
        return res.status(200).json({
             message:"created user",
             data:regUser,
@@ -163,7 +168,7 @@ export const fundWalletFromBank= async(req:Request,res:Response)=>{
       amount: number;
     }
 
-    const { amount,description, name, number, cvv, pin, expiry_year, expiry_month } =
+    const { amount,description, number, cvv, pin, expiry_year, expiry_month } =
       req.body;
 
     const paymentData = {
@@ -212,7 +217,7 @@ export const fundWalletFromBank= async(req:Request,res:Response)=>{
 
         if (response?.data?.status === true) {
           await walletModel.findByIdAndUpdate(wallet?._id, {
-            balance: Number(amount + wallet?.balance),
+            balance: Number(amount) + Number(wallet?.balance),
           });
           const getHistory = await historyModel.create({
             message:`Dear ${user?.name} your account has been credited by ${amount}`,
@@ -296,7 +301,7 @@ export const fundWalletFromBank= async(req:Request,res:Response)=>{
 // }
 export const getOneUser = async(req:Request,res:Response):Promise<Response>=>{
     try {
-        const all = await userModel.findById(req.params.id).populate('wallet')
+        const all = await userModel.findById(req.params.id).populate("backToSchool").populate("wallet")
         return res.status(200).json({
             message:"here is the user",
             data: all,

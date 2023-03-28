@@ -52,7 +52,7 @@ const UserSchema = new mongoose_1.default.Schema({
     backToSchool: [
         {
             type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: "backtoschool"
+            ref: "backtoschools"
         }
     ],
 });

@@ -21,4 +21,4 @@ const walletSchema = new mongoose_1.default.Schema({
         type: String
     },
 });
-exports.default = mongoose_1.default.model("backtoschool", walletSchema);
+exports.default = mongoose_1.default.model("backtoschools", walletSchema);

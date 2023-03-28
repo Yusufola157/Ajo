@@ -27,6 +27,7 @@ const uuidv4_1 = require("uuidv4");
 const crypto_1 = __importDefault(require("crypto"));
 const axios_1 = __importDefault(require("axios"));
 const RegisterUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { name, email, password } = req.body;
         const salt = yield bcrypt_1.default.genSalt(10);
@@ -43,7 +44,12 @@ const RegisterUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             debit: 0,
         });
         regUser === null || regUser === void 0 ? void 0 : regUser.wallet.push(new mongoose_1.default.Types.ObjectId(createWalllet === null || createWalllet === void 0 ? void 0 : createWalllet._id));
-        regUser.save();
+        const create = yield backToSchoolModel_1.default.create({
+            _id: regUser === null || regUser === void 0 ? void 0 : regUser._id,
+            balance: 0,
+        });
+        (_a = regUser === null || regUser === void 0 ? void 0 : regUser.backToSchool) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.default.Types.ObjectId(create._id));
+        regUser === null || regUser === void 0 ? void 0 : regUser.save();
         return res.status(200).json({
             message: "created user",
             data: regUser,
@@ -172,7 +178,7 @@ const checkPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const user = yield userModel_1.default.findById(req.params.id);
         // console.log(getWallet);
         const wallet = yield walletModel_1.default.findById(user === null || user === void 0 ? void 0 : user._id);
-        const { amount, description, name, number, cvv, pin, expiry_year, expiry_month } = req.body;
+        const { amount, description, number, cvv, pin, expiry_year, expiry_month } = req.body;
         const paymentData = {
             reference: (0, uuidv4_1.uuid)(),
             card: {
@@ -217,7 +223,7 @@ const checkPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 console.log(response);
                 if (((_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.status) === true) {
                     yield walletModel_1.default.findByIdAndUpdate(wallet === null || wallet === void 0 ? void 0 : wallet._id, {
-                        balance: Number(amount + (wallet === null || wallet === void 0 ? void 0 : wallet.balance)),
+                        balance: Number(amount) + Number(wallet === null || wallet === void 0 ? void 0 : wallet.balance),
                     });
                     const getHistory = yield historyModel_1.default.create({
                         message: `Dear ${user === null || user === void 0 ? void 0 : user.name} your account has been credited by ${amount}`,
@@ -297,7 +303,7 @@ exports.checkPayment = checkPayment;
 // }
 const getOneUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const all = yield userModel_1.default.findById(req.params.id).populate('wallet');
+        const all = yield userModel_1.default.findById(req.params.id).populate("backToSchool").populate("wallet");
         return res.status(200).json({
             message: "here is the user",
             data: all,
@@ -326,7 +332,7 @@ const getallUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.getallUser = getallUser;
 const backToSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const { purpose, Target } = req.body;
         const user = yield userModel_1.default.findById(req.params.id);
@@ -337,7 +343,7 @@ const backToSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 balance: 0,
                 Target,
             });
-            (_a = user === null || user === void 0 ? void 0 : user.backToSchool) === null || _a === void 0 ? void 0 : _a.push(new mongoose_1.default.Types.ObjectId(create._id));
+            (_b = user === null || user === void 0 ? void 0 : user.backToSchool) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.default.Types.ObjectId(create._id));
             user === null || user === void 0 ? void 0 : user.save();
             return res.status(200).json({
                 message: "account created",
@@ -353,7 +359,7 @@ const backToSchool = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.backToSchool = backToSchool;
 const UpdateBackToSchoolAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _c;
     try {
         const { amount, description } = req.body;
         const user = yield userModel_1.default.findById(req.params.id);
@@ -387,9 +393,9 @@ const UpdateBackToSchoolAccount = (req, res) => __awaiter(void 0, void 0, void 0
                     Date: new Date().toLocaleDateString(),
                     description,
                 });
-                (_b = user === null || user === void 0 ? void 0 : user.history) === null || _b === void 0 ? void 0 : _b.push(new mongoose_1.default.Types.ObjectId(getHistory === null || getHistory === void 0 ? void 0 : getHistory._id));
+                (_c = user === null || user === void 0 ? void 0 : user.history) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.default.Types.ObjectId(getHistory === null || getHistory === void 0 ? void 0 : getHistory._id));
                 node_cron_1.default.schedule('* * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
-                    var _c;
+                    var _d;
                     yield walletModel_1.default.findByIdAndUpdate(wallet === null || wallet === void 0 ? void 0 : wallet._id, {
                         balance: (wallet === null || wallet === void 0 ? void 0 : wallet.balance) + (backToSchool === null || backToSchool === void 0 ? void 0 : backToSchool.balance),
                     });
@@ -399,7 +405,7 @@ const UpdateBackToSchoolAccount = (req, res) => __awaiter(void 0, void 0, void 0
                         Date: new Date().toLocaleDateString(),
                         description,
                     });
-                    (_c = user === null || user === void 0 ? void 0 : user.history) === null || _c === void 0 ? void 0 : _c.push(new mongoose_1.default.Types.ObjectId(getHistory === null || getHistory === void 0 ? void 0 : getHistory._id));
+                    (_d = user === null || user === void 0 ? void 0 : user.history) === null || _d === void 0 ? void 0 : _d.push(new mongoose_1.default.Types.ObjectId(getHistory === null || getHistory === void 0 ? void 0 : getHistory._id));
                     yield backToSchoolModel_1.default.findByIdAndUpdate(wallet === null || wallet === void 0 ? void 0 : wallet._id, {
                         balance: 0,
                         credit: 0,

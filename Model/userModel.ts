@@ -50,7 +50,7 @@ const UserSchema = new mongoose.Schema<UserData>({
     backToSchool:[
         {
             type:mongoose.Schema.Types.ObjectId,
-            ref:"backtoschool"
+            ref:"backtoschools"
         }
     ],
 })
