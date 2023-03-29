@@ -9,7 +9,7 @@ const cors_1 = __importDefault(require("cors"));
 const userRoutes_1 = __importDefault(require("./Routes/userRoutes"));
 const adminRoutes_1 = __importDefault(require("./Routes/adminRoutes"));
 const port = 1400;
-const url = "mongodb://127.0.0.1/payment";
+const url = "mongodb+srv://Sukanmi157:Sukanmi157@cluster0.dorzl9v.mongodb.net/?retryWrites=true&w=majority";
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
